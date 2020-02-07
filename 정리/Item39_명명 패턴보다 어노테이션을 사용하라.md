@@ -2,6 +2,7 @@
 
 테스트 프레임워크인  JUnit은 버전 3까지 테스트 메서드 이름을 test로 시작하게끔 했다. 하지만 이런 명명패턴은 단점이 존재했다.
 
+## 
 **명명패턴의 단점**
 
 1. 오타가 나면 안된다.
@@ -18,7 +19,7 @@
 **어노테이션이 이 모든 문제를 해결해준다. 이는 JUnit 버전 4부터 전면 도입되었다.**
 
 
-
+## 
 ### 테스트 프레임워크를 사용하여 어노테이션의 동작방식을 살펴보자
 
 ~~~java
@@ -37,7 +38,6 @@ public @interface Test {
 
 
 ## 
-
 ### **마커 어노테이션**
 
 마커 어노테이션은 '아무 매개변수 없이 단순히 대상에 마킹한다'는 뜻에서 마커 어노테이션이라 한다.
@@ -79,6 +79,7 @@ Sample 클래스에는 정적 메소드가 7개가 있고, 그 중 4개에 @Test
 - @Test가 달린 총 4개의 테스트중 1개는 성공, 2개는 실패, 1개는 잘못 사용했다.
 - @Test가 붙지 않은 메소드는 테스트 도구가 무시할 것이다.
 
+
 **해당 @Test의 사용 목적은**
 
 - Sample 클래스의 의미에는 직접적인 영향을 주지 않고, @Test에 관심이 있는 도구에서 특별한 처리를 할 기회를 주는 것이다.
@@ -114,7 +115,7 @@ public class RunTests {
 - m.isAnnotationPresent(Test.class) : Test 클래스의 메소드들을 확인하면서 어노테이션이 붙여진 것만 true로 반환
 
 
-
+#
 **테스트 메소드를 찾은 후 테스트 메소드가 예외를 던지게 되면 리플렉션 메커니즘이 InvocationTargetException으로 감싸서 다시 던지게 된다.**
 
 - 그래서 **이 프로그램은 InvocationTargetException을 잡아 원래 예외에 담긴 실패 정보를 추출해(getCause()) 출력**하는 것이다.
@@ -125,7 +126,7 @@ public class RunTests {
 - *해당 소스에서는 Sample.m5()가 해당된다.*
 
 
-
+#
 **실행결과**
 
 ![image](https://user-images.githubusercontent.com/40616436/73935093-1f895b80-4923-11ea-804b-74ffb6437c45.png)
@@ -160,7 +161,7 @@ public class Sample2 {
 ~~~
 
 
-
+  
 **Test 진행할 객체 설정**
 
 ~~~java
@@ -225,7 +226,7 @@ public class RunTests {
 단, 해당 **예외 클래스 파일이 컴파일 타임에는 존재했으나 런타임에는 존재하지 않을 수도** 있다. 이런 경우라면 **테스트 러너가 TypeNotPresentException을 던질 것이다.**
 
 
-
+#
 **실행결과**
 
 ![image](https://user-images.githubusercontent.com/40616436/73938060-d38de500-4929-11ea-9fce-def09e6bd096.png)
@@ -321,7 +322,7 @@ Java 8 에서는 여러 개의 값을 받는 어노테이션을 다른 방식으
 - @Repeatable을 단 어노테이션은 하나의 프로그램 요소에 여러 번 달 수 있다.
 
 
-
+#
 단 주의할 점이 있다.
 
 1. **@Repeatable을 단 어노테이션을 반환하는 '컨테이너 어노테이션'을 하나 더 정의하고, @Repeatable에 이 컨테이너 어노테이션의 class객체를 매개변수로 전달해야한다.**
@@ -329,7 +330,7 @@ Java 8 에서는 여러 개의 값을 받는 어노테이션을 다른 방식으
 3. **컨테이너 어노테이션 타입에는 적절한 보존 정책(@Retention)과 적용 대상(@Target)을 명시해야 한다. 그렇지 않으면 컴파일이 되지 않는다.**
 
 
-
+#
 **커스텀 어노테이션 수정**
 
 ~~~java
@@ -403,7 +404,7 @@ if(m.isAnnotationPresent(ExceptionTest.class) || m.isAnnotationPresent(Exception
 **이런 이유로, 달려 있는 수와 상관없이 모두 검사를 진행하려면 getAnnotaionByType()으로 모두 가져와서 따로따로 검사를 진행해야 한다.**
 
 
-
+#
 **실행 결과**
 
 ![image](https://user-images.githubusercontent.com/40616436/73938289-4c8d3c80-492a-11ea-8234-80cb62a07d7d.png)
