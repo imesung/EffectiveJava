@@ -1,4 +1,4 @@
-## equals는 일반 규약을 지켜 재정의하라
+## equals는 일반 규약을 지켜 재정의하라(반사성, 대칭성, 추이성)
 
 Equals 메소드는 재정의하기 쉬워 보이지만 곳곳에 함정이 도사리고 있어 자칫하면 끔찍한 결과를 초래할 수 있다.
 
@@ -94,13 +94,15 @@ Object에서 말하는 동치관계는 쉽게 말해, **서로 같은 원소들�
 
 
 
-#### 동치 관계를 만족시키기 위한 요건
+### 동치 관계를 만족시키기 위한 요건
 
-1. **반사성**은 단순히 말해 객체는 자기 자신과 같아야 한다는 뜻이다.
+1. #### **반사성**은 단순히 말해 객체는 자기 자신과 같아야 한다는 뜻이다.
 
    - 이 요건을 어긴 클래스를 확인하려면, 해당 클래스의 인스턴스를 컬렉션에 넣고 contains()를 호출하면 인스턴스가 없다고 답할 것이다.
 
-2. **대칭성**은 두 객체는 서로에 대한 동치 여부에 똑같이 답해야 한다는 뜻이다.
+   
+
+2. #### **대칭성**은 두 객체는 서로에 대한 동치 여부에 똑같이 답해야 한다는 뜻이다.
 
    - 아래 클래스에서 toString 메소드는 원본 문자열의 대소문자를 그대로 돌려주지만, equals에서는 대소문자를 무시하여 확인하다.
 
@@ -223,13 +225,178 @@ Object에서 말하는 동치관계는 쉽게 말해, **서로 같은 원소들�
 
    
 
-3. **추이성**은 첫번째 객체와 두번째 객체가 같고, 두번째 객체와 세번째 객체가 같다면, 첫번째 객체와 세번째 객체도 같아야 한다는 뜻이다.
+   
+
+3. #### 추이성은 첫번째 객체와 두번째 객체가 같고, 두번째 객체와 세번째 객체가 같다면, 첫번째 객체와 세번째 객체도 같아야 한다는 뜻이다.
 
    - 만약, 상위 클래스에는 없는 필드를 하위 클래스에 추가하는 상황을 생각해보자(equals 비교에 영향을 주는 정보를 추가한 것이다.)
 
      ~~~java
+     //Point
+     public class Point {
+         private final int x;
+         private final int y;
      
+         public Point(int x, int y) {
+             this.x = x;
+             this.y = y;
+         }
+     
+         @Override
+         public boolean equals(Object o) {
+             if(!(o instanceof Point)) {
+                 return false;
+             }
+             Point p = (Point)o;
+             return p.x == x && p.y == y;
+         }
+     }
+     
+     //ColorPoint
+     public class ColorPoint extends Point {
+         private final Color color;
+     
+         public ColorPoint(int x, int y, Color color) {
+             super(x, y);
+             this.color = color;
+         }
+     }
      ~~~
+
+   - equals()를 그대로 둔다면 Point의 구현이 상속되어 색상(Color)정보를 무시한채 비교를 수행할 것이다.
+
+     - equals의 규약을 어긴것은 아니지만 중요한 정보를 놓치게 된다.
+
+     
+
+   - 다음 코드처럼 비교 대상이 또 다른 ColorPoint이고 **위치와 색상이 같을 때만 true를 반환하는 equals를 생각해보자**
+
+     ~~~java
+     //ColorPoint
+     @Override
+     public boolean equals(Object o) {
+       if(!(o instanceof ColorPoint)) {
+         return false;
+       }
+       return super.equals(o) && ((ColoPoint) o).color == color;
+     }
+     ~~~
+
+     -  이 메소드는 일반 Point를 ColorPoint에 비교한 결과와 그 둘을 바꿔 비교한 결과가 다를 수 있다.
+
+       - **Point의 equals는 색상을 무시하고, ColorPoint의 equals는 입력 매개변수의 클래스 종류가 다르다며 매번 false를 return할 것이다.**
+
+     - 실행 동작을 확인해보자.
+
+       ~~~java
+       public static void main(String [] args) {
+         Point p = new Point(1, 2);
+         ColorPoint cp = new ColorPoint(1, 2, Color.RED);
+       }
+       ~~~
+
+       - 실행결과는 **p.equals(cp)는 true이고, cp.equals(p)는 false**이다.
+
+     
+
+   - **ColorPoint.equals가 Point와 비교할 때는 색상을 무시하도록 하면 어떨까?**
+
+     ~~~java
+     //ColorPoint 
+     public boolean equals(Object o) {
+        if(!(o instanceof ColorPoint)) {
+          return false;
+        }
+     
+        //o가 일반 Point이면 색상을 무시하고 비교한다.
+        if(!(o instanceof ColorPoint)) {
+          return o.equals(this);
+        }
+     
+        return super.equals(o) && ((ColorPoint) o).color == color;
+      }
+     ~~~
+
+     - **이 방식을 사용하면 대칭성은 지켜주지만, 추이성을 깨뜨린다.**
+
+       ~~~java
+       public static void main(String [] args) {
+         //2. ColorPoint equals 변경
+         ColorPoint p1 = new ColorPoint(1, 2, Color.RED);
+         Point p2 = new Point(1, 2);
+         ColorPoint p3 = new ColorPoint(1, 2, Color.BLUE);
+       }
+       ~~~
+
+       - 이제 p1.equals(p2)와 p2.equals(p3)는 true를 반환하는데, p1.equals(p3)가 false를 반환한다.
+         - 추이성이 명백히 위반된다.
+         - **p1과 p2, p2와 p3 비교에서는 색상을 무시했지만, p1과 p3는 색상까지 고려했기 때문이다.**
+       - 또한, 이 방식은 **무한 재귀에 빠질 위험도 있다.**
+         - 만약 Point의 또다른 하위 클래스인 SmallPoint를 만들고, equals는 같은 방식으로 구현했다고 치자.
+         - **그런 후 myColorPoint.equals(mySmallPoint)를 호출하면 StackOverflowError를 일으킨다.??**
+
+     
+
+     - 사실 **이 현상(대칭성은 지켜주되 추이성은 깨뜨림)은 모든 객체 지향 언어의 도치관계에서 나타나는 근본적인 원인**이다.
+
+       - **구현 클래스를 확장해 새로운 값을 추가하면서 equals 규약을 만조시킬 방법은 존재하지 않는다.**
+
+         - 객체 지향적 추상화의 이점을 포기하지 않는 한 말이다.
+
+       - 이 말은 얼핏, **equals 안에 intanceof 검사를 getClass 검사로 바꾸면 규약도 지키고 값도 추가하면서 구현 클래스를 상속할 수 있다는 뜻으로 보이는데..**
+
+         ~~~java
+         //Point
+         @Override
+         public boolean equals(Object o) {
+           if(o == null || o.getClass() != getClass()) {
+             return false;
+           }
+           Point p = (Point)o;
+           return p.x == x && p.y == y;
+         }
+         ~~~
+
+         - **이번 equals는 같은 구현 클래스의 객체와 비교할 때만 true를 반환한다.**
+         -  **Point의 하위 클래스는 정의상 여전히  Point이므로 어디서든 Point로써 활용될 수 있어야 하는데, 이 방식에서는 그렇지 못한다.**
+           - 예를들어 Point를 확장한 CounterPoint를 선언하고 Set 컬렉션에 Point 객체와 CounterPoint 객체를 add 한 후 contains(Point p)에 Point 대신 CounterfPoint가 매개변수로 선언되면, getClass()로 인해 CounterPoint에 해당하는 객체만 true로 반환 될 것이다.
+           - 이유는, CoutnerPoint 인스턴스는 어떤 Point와도 같을 수 없기 때문이다.
+
+     
+
+   - **구체 클래스의 하위 클래스에서 값을 추가할 방법은 없지만, 괜찮은 우회 방법이 있다.**
+
+     - 바로 **'상속 대신 컴포지션을 사용'**하는 것이다.
+
+       ~~~java
+       public class InheritanceColorPoint {
+           private final Point point;
+           private final Color color;
+       
+           public InheritanceColorPoint(int x, int y, Color color) {
+               point = new Point(x, y);
+               this.color = Objects.requireNonNull(color);
+           }
+       
+         	//이 InheritanceColorPoint에서 Point 뷰를 반환한다.
+           public Point asPoint() {
+               return point;
+           }
+           
+           public boolean equals(Object o) {
+               if(!(o instanceof InheritanceColorPoint)) {
+                   return false;
+               }
+       
+               InheritanceColorPoint cp = (InheritanceColorPoint) o;
+               return cp.point.equals(point) && cp.color.equals(color);
+           }
+       }
+       ~~~
+
+       
+
+     
 
      
 
