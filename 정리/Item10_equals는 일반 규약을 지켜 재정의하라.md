@@ -243,7 +243,7 @@ Object에서 말하는 동치관계는 쉽게 말해, **서로 같은 원소들�
          }
      
          @Override
-         public boolean equals(Object o) {
+         public 	boolean equals(Object o) {
              if(!(o instanceof Point)) {
                  return false;
              }
