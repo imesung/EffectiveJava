@@ -331,9 +331,11 @@ Object에서 말하는 동치관계는 쉽게 말해, **서로 같은 원소들�
        - 이제 p1.equals(p2)와 p2.equals(p3)는 true를 반환하는데, p1.equals(p3)가 false를 반환한다.
          - 추이성이 명백히 위반된다.
          - **p1과 p2, p2와 p3 비교에서는 색상을 무시했지만, p1과 p3는 색상까지 고려했기 때문이다.**
-       - 또한, 이 방식은 **무한 재귀에 빠질 위험도 있다.**
+       - 또한, 이 방식은 무한 재귀에 빠질 위험도 있다.
          - 만약 Point의 또다른 하위 클래스인 SmallPoint를 만들고, equals는 같은 방식으로 구현했다고 치자.
-         - **그런 후 myColorPoint.equals(mySmallPoint)를 호출하면 StackOverflowError를 일으킨다.??**
+         - 그런 후 ColorPoint.equals(SmallPoint);를 할 시 ColorPoint의 두번째 if문을 통해 SmallPoint의 equals()로 진입할 것이다.
+         - 하지만, SmallPoint.equals()에서도 두번째 if문을 타게 되어, 다시 ColorPoint.equals()로 갈 것이다.
+         - 이로 인해 무한 재귀 상태에 빠지게 되는 것이다.
 
      
 
